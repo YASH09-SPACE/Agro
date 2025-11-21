@@ -1,8 +1,7 @@
 package com.example.agro.data
 
-data class Category
-    (
+data class Category(
     val title: String,
-    val count: String,
-    val imageResId: Int
-    )
+    val itemCount: Int,
+    val iconResId: Int
+)

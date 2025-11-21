@@ -17,7 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import java.security.MessageDigest
 
 class sign_up : AppCompatActivity() {
@@ -58,16 +58,17 @@ class sign_up : AppCompatActivity() {
         }
     }
 
-//    override fun onStart() {
-//        super.onStart()
-//        // If already signed in, go to MainActivity so sign_in isn't shown again
-//        auth.currentUser?.let {
-//            startActivity(Intent(this, MainActivity::class.java).apply {
-//                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//            })
-//            finish()
-//        }
-//    }
+    override fun onStart() {
+        super.onStart()
+        // If already signed in, go to MainActivity so sign_in isn't shown again
+        auth.currentUser?.let {
+            startActivity(Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            })
+            finish()
+
+        }
+    }
 
     private fun registerUser() {
         val fullName = binding.etFullName.text.toString().trim()
@@ -134,8 +135,11 @@ class sign_up : AppCompatActivity() {
                         createdAt = System.currentTimeMillis()
                     )
 
-                    val dbRef = FirebaseDatabase.getInstance().getReference("Users")
-                    dbRef.child(uid).setValue(user)
+                    // Save to Firestore instead of Realtime Database
+                    val db = FirebaseFirestore.getInstance()
+                    db.collection("Users")
+                        .document(uid)
+                        .set(user)
                         .addOnCompleteListener { dbTask ->
                             setLoading(false)
                             binding.signUpButton.isEnabled = true
@@ -143,7 +147,7 @@ class sign_up : AppCompatActivity() {
                             if (dbTask.isSuccessful) {
                                 Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
                                 clearFields()
-                                // go to sign in or MainActivity. We'll go to MainActivity here
+                                // go to MainActivity
                                 startActivity(Intent(this, MainActivity::class.java).apply {
                                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 })
@@ -221,7 +225,6 @@ class sign_up : AppCompatActivity() {
                         return@addOnCompleteListener
                     }
 
-                    // Save user in DB (overwrite basic profile)
                     val uid = firebaseUser.uid
                     val email = firebaseUser.email
                     val displayName = firebaseUser.displayName ?: account.displayName
@@ -234,8 +237,11 @@ class sign_up : AppCompatActivity() {
                         createdAt = System.currentTimeMillis()
                     )
 
-                    val dbRef = FirebaseDatabase.getInstance().getReference("Users")
-                    dbRef.child(uid).setValue(user)
+                    // Save to Firestore instead of Realtime Database
+                    val db = FirebaseFirestore.getInstance()
+                    db.collection("Users")
+                        .document(uid)
+                        .set(user)
                         .addOnCompleteListener { dbTask ->
                             if (dbTask.isSuccessful) {
                                 Toast.makeText(this, "Signed in with Google", Toast.LENGTH_SHORT).show()
@@ -245,11 +251,19 @@ class sign_up : AppCompatActivity() {
                                 })
                                 finish()
                             } else {
-                                Toast.makeText(this, "Failed to save profile: ${dbTask.exception?.message}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    this,
+                                    "Failed to save profile: ${dbTask.exception?.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
                 } else {
-                    Toast.makeText(this, "Authentication failed: ${authTask.exception?.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        "Authentication failed: ${authTask.exception?.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
     }

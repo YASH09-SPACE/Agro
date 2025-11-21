@@ -7,13 +7,16 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import com.example.agro.data.User
 import com.example.agro.databinding.ActivitySignInBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class sign_in : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignInBinding
     private lateinit var auth: FirebaseAuth
+    private val db: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +40,8 @@ class sign_in : AppCompatActivity() {
         super.onStart()
         // If user already signed in, skip sign-in and go to MainActivity
         auth.currentUser?.let {
-            startActivity(Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            })
-            finish()
+            // Optionally you can also load Firestore user here if needed
+            goToMain()
         }
     }
 
@@ -72,27 +73,74 @@ class sign_in : AppCompatActivity() {
 
         setLoading(true)
 
+        // Auth check is always via FirebaseAuth
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                setLoading(false)
                 if (task.isSuccessful) {
-                    Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show()
-                    // go to MainActivity and clear backstack
-                    startActivity(Intent(this, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    })
-                    finish()
+                    val uid = auth.currentUser?.uid
+                    if (uid == null) {
+                        setLoading(false)
+                        Toast.makeText(this, "Login succeeded but UID is null", Toast.LENGTH_LONG).show()
+                        return@addOnCompleteListener
+                    }
+
+                    // After auth success, load user from Firestore (NOT Realtime DB)
+                    loadUserFromFirestore(uid)
                 } else {
-                    // show readable error
+                    setLoading(false)
                     val err = task.exception?.message ?: "Authentication failed"
                     Toast.makeText(this, err, Toast.LENGTH_LONG).show()
                 }
             }
     }
 
+    /**
+     * Load user profile from Firestore "Users" collection.
+     * This replaces any logic you previously had with Realtime Database.
+     */
+    private fun loadUserFromFirestore(uid: String) {
+        db.collection("Users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                setLoading(false)
+                if (snapshot.exists()) {
+                    // Map to your User data class (optional, but useful)
+                    val user = snapshot.toObject(User::class.java)
+                    // You can keep user in a singleton / ViewModel if you want
+
+                    Toast.makeText(this, "Signed in successfully", Toast.LENGTH_SHORT).show()
+                    goToMain()
+                } else {
+                    // User authenticated but no profile in Firestore
+                    Toast.makeText(
+                        this,
+                        "User profile not found in Firestore",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    // Optionally create a minimal profile here if you want
+                    goToMain() // or stay on sign-in if you prefer
+                }
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                Toast.makeText(
+                    this,
+                    "Failed to load user profile: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+    }
+
+    private fun goToMain() {
+        startActivity(Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
+    }
+
     private fun setLoading(isLoading: Boolean) {
         binding.progressOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-        // optionally disable inputs while loading
         binding.Edtemail.isEnabled = !isLoading
         binding.Edtpassword.isEnabled = !isLoading
         binding.signInButton.isEnabled = !isLoading

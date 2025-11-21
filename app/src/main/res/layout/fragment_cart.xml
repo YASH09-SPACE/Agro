@@ -128,17 +128,6 @@
                 </LinearLayout>
 
                 <Button
-                    android:id="@+id/promo_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="38dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/promo_button_background"
-                    android:text="Apply Promotion Code    2 Promos"
-                    android:textAllCaps="false"
-                    android:textColor="#2E8B57"
-                    app:backgroundTint="@null" />
-
-                <Button
                     android:id="@+id/CheckoutButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

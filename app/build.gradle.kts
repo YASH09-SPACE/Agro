@@ -48,6 +48,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:24.4.0")
 
 
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
