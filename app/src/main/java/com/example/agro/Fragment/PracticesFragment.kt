@@ -1,5 +1,6 @@
 package com.example.agro.Fragment
 
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.agro.CropAdapter
+import com.example.agro.CropDetailsActivity
 import com.example.agro.data.Crop
 import com.example.agro.databinding.FragmentPracticesBinding
 
@@ -34,9 +36,11 @@ class PracticesFragment : Fragment() {
         val cropList = generateSampleCrops()
 
         val adapter = CropAdapter(cropList) { crop ->
-            Log.d(TAG, "Crop clicked: ${crop.name}")
-            // Example: Navigate to crop details or show Toast
-            // Toast.makeText(requireContext(), "Clicked: ${crop.name}", Toast.LENGTH_SHORT).show()
+            // On crop click → open CropDetailsActivity
+            val intent = Intent(requireContext(), CropDetailsActivity::class.java)
+            intent.putExtra("crop_name", crop.name)
+            intent.putExtra("crop_image", crop.imageUrl)
+            startActivity(intent)
         }
 
         binding.rvCropGrid.apply {
@@ -58,6 +62,7 @@ class PracticesFragment : Fragment() {
             Crop("Tea", "url_tea_img")
         )
     }
+
 
     class GridSpacingItemDecoration(
         private val spanCount: Int,

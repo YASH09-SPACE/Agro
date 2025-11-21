@@ -93,7 +93,7 @@ class HomeFragment : Fragment() {
         val adapter = mainAdapter(items)
         binding.rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvProducts.adapter = adapter
-
+        
 
         // =================================================================
         // === NEW CODE ADDED FOR REDIRECTION ==============================

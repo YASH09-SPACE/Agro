@@ -8,6 +8,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.agro.databinding.FragmentProfileBinding
 import com.example.agro.sign_in
+import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+
 
 class ProfileFragment : Fragment() {
 
@@ -40,10 +44,22 @@ class ProfileFragment : Fragment() {
         }
 
         binding.btnLogout.setOnClickListener {
-            // Handle Logout logic here
-           val intent = Intent(requireContext(), sign_in::class.java)
+            // 1. Logout from FirebaseAuth
+            FirebaseAuth.getInstance().signOut()
+
+            // 2. Also logout from Google if used
+            val googleSignInClient = GoogleSignIn.getClient(
+                requireContext(),
+                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+            )
+            googleSignInClient.signOut()
+
+            // 3. Redirect to sign_in and clear back stack
+            val intent = Intent(requireContext(), sign_in::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
+
     }
 
     override fun onDestroyView() {

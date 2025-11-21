@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "340222276359",
+    "firebase_url": "https://agro-e-commerce-221e9-default-rtdb.firebaseio.com",
+    "project_id": "agro-e-commerce-221e9",
+    "storage_bucket": "agro-e-commerce-221e9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:340222276359:android:e5e69bca9e05a62f8b8ba2",
+        "android_client_info": {
+          "package_name": "com.example.agro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "340222276359-i3dmqqfhffthn7d7vh5crjg53g7d65ko.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.agro",
+            "certificate_hash": "3bc7b550a351a350c5f7c21f2711e56666de4f02"
+          }
+        },
+        {
+          "client_id": "340222276359-pcntkc79je2l8b74m455aqj3fs6212fq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDotYqWPXf1jaRU5c7HJaEHSrd3PBa9N0E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "340222276359-pcntkc79je2l8b74m455aqj3fs6212fq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

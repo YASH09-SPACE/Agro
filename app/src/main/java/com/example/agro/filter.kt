@@ -2,29 +2,22 @@ package com.example.agro
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.agro.Fragment.HomeFragment
 
-class search_products : AppCompatActivity() {
+class filter : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_search_products)
+        setContentView(R.layout.activity_filter)
 
-        val but = findViewById<ImageView>(R.id.btnFilter)
+        val but = findViewById<ImageView>(R.id.btnClose)
         but.setOnClickListener {
-            val i = Intent(this, filter::class.java)
+            val i = Intent(this, search_products::class.java)
             startActivity(i)
         }
-        val butt = findViewById<ImageView>(R.id.btnClose)
-        but.setOnClickListener {
-            val i = Intent(this, HomeFragment::class.java)
-            startActivity(i)
         }
     }
-}

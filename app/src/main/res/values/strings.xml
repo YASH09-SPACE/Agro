@@ -2,4 +2,7 @@
     <string name="app_name">Agro</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="default_web_client_id">340222276359-pcntkc79je2l8b74m455aqj3fs6212fq.apps.googleusercontent.com.apps.googleusercontent.com</string>
+
 </resources>
+
