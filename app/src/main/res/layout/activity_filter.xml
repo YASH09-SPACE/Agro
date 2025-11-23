@@ -76,19 +76,21 @@
                 android:orientation="horizontal">
 
                 <EditText
+                    android:id="@+id/etMinPrice"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:background="@drawable/bg_search"
-                    android:hint="₹ 500"
+                    android:hint="Min"
                     android:textColorHint="@android:color/black"
                     android:paddingHorizontal="16dp"
                     android:textSize="16sp"
                     android:inputType="numberDecimal"
-                    android:singleLine="true"/>
+                    android:singleLine="true" />
 
                 <EditText
+                    android:id="@+id/etMaxPrice"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
@@ -99,45 +101,12 @@
                     android:paddingHorizontal="16dp"
                     android:textSize="16sp"
                     android:inputType="numberDecimal"
-                    android:singleLine="true"/>
+                    android:singleLine="true" />
+
+
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Others"
-                android:textColor="@android:color/black"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp"/>
 
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:rowCount="2"
-                android:orientation="horizontal"
-                android:useDefaultMargins="true"
-                android:alignmentMode="alignBounds"
-                android:columnOrderPreserved="false">
-
-                <CheckBox
-                    android:checked="true"
-                    android:text="Discount"
-                    style="@style/CustomCheckboxStyle"
-                    />
-                <CheckBox
-                    android:text="Voucher"
-                    style="@style/CustomCheckboxStyle" />
-                <CheckBox
-                    android:text="Free Shipping"
-                    style="@style/CustomCheckboxStyle" />
-                <CheckBox
-                    android:checked="true"
-                    android:text="Same Day Deliv."
-                    style="@style/CustomCheckboxStyle" />
-            </GridLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -149,10 +118,14 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"/>
 
-            <include layout="@layout/item_category_filter" />
-            <include layout="@layout/item_category_filter" />
-            <include layout="@layout/item_category_filter" />
-            <include layout="@layout/item_category_filter" />
+            <LinearLayout
+                android:id="@+id/categoryContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp" />
+
+
 
         </LinearLayout>
     </ScrollView>
