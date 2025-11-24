@@ -6,14 +6,13 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.agro.Model.CartItem
 import com.example.agro.R
 
 class CartAdapter(
     private val cartList: MutableList<CartItem>,
-    private val updateTotal: () -> Unit      // 🔥 Callback to update totals
+    private val onCartChanged: () -> Unit    // callback to update totals
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
     inner class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,6 +23,7 @@ class CartAdapter(
         val quantityText: TextView = itemView.findViewById(R.id.quantity_text)
         val increaseBtn: ImageButton = itemView.findViewById(R.id.increase_button)
         val decreaseBtn: ImageButton = itemView.findViewById(R.id.decrease_button)
+        val removeBtn: ImageButton = itemView.findViewById(R.id.remove_button)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {
@@ -38,38 +38,35 @@ class CartAdapter(
         holder.productImage.setImageResource(item.imageResId)
         holder.productName.text = item.name
         holder.productCategory.text = item.category
-        holder.productPrice.text = "₹${item.price}"
+        holder.productPrice.text = "₹${item.price.toInt()}"
         holder.quantityText.text = item.quantity.toString()
 
-        // 🔥 Increase Quantity
+        // Increase quantity
         holder.increaseBtn.setOnClickListener {
-            if (item.quantity < item.stockQuantity) {
-                item.quantity++
-                notifyItemChanged(position)
-                updateTotal()  // refresh totals
-            } else {
-                Toast.makeText(holder.itemView.context,
-                    "Only ${item.stockQuantity} in stock!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            item.quantity++
+            notifyItemChanged(holder.bindingAdapterPosition)
+            onCartChanged()
         }
 
-        // 🔥 Decrease Quantity
+        // Decrease quantity
         holder.decreaseBtn.setOnClickListener {
             if (item.quantity > 1) {
                 item.quantity--
-                notifyItemChanged(position)
-                updateTotal()
-            } else {
-                // Optional: remove if quantity goes below 1
-                cartList.removeAt(position)
-                notifyItemRemoved(position)
-                updateTotal()
+                notifyItemChanged(holder.bindingAdapterPosition)
+                onCartChanged()
+            }
+        }
+
+        // Remove item
+        holder.removeBtn.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                cartList.removeAt(pos)
+                notifyItemRemoved(pos)
+                onCartChanged()
             }
         }
     }
-
 
     override fun getItemCount(): Int = cartList.size
 }

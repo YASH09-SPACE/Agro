@@ -273,15 +273,18 @@ class search_products : AppCompatActivity() {
         searchAdapter = SearchResultAdapter(searchResults) { product ->
             CartManager.addToCart(
                 CartItem(
+                    productId = product.productId,
                     imageResId = R.drawable.ic_product,
                     name = product.name,
                     category = product.category,
                     price = product.price,
+                    quantity = 1,                           // default
                     stockQuantity = product.stockQuantity
                 )
             )
             Toast.makeText(this, "${product.name} added to cart", Toast.LENGTH_SHORT).show()
         }
+
         rvSearchResults.adapter = searchAdapter
 
         // --- Load recent search UI ---
@@ -373,12 +376,14 @@ class search_products : AppCompatActivity() {
 
                     searchResults.add(
                         SearchProduct(
+                            productId = doc.id,          // 👈 Firestore document id
                             name = name,
                             price = priceDouble,
                             category = category,
                             stockQuantity = stockQty
                         )
                     )
+
                 }
 
                 searchAdapter.notifyDataSetChanged()

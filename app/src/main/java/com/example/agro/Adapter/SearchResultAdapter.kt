@@ -7,11 +7,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.example.agro.Model.CartItem
 import com.example.agro.R
 
-// Simple model just for search results
+// Model used in search results
 data class SearchProduct(
+    val productId: String,      // 👈 Firestore doc id
     val name: String,
     val price: Double,
     val category: String,
@@ -40,10 +40,10 @@ class SearchResultAdapter(
     override fun onBindViewHolder(holder: SearchViewHolder, position: Int) {
         val item = items[position]
 
-        holder.imgProduct.setImageResource(R.drawable.ic_product) // placeholder
+        holder.imgProduct.setImageResource(R.drawable.ic_product) // placeholder image
         holder.tvProductName.text = item.name
         holder.tvProductPrice.text = "₹${item.price.toInt()}"
-        holder.tvProductDiscount.visibility = View.GONE // no discount field yet
+        holder.tvProductDiscount.visibility = View.GONE // no discount yet
 
         holder.btnCart.setOnClickListener {
             onAddToCart(item)
