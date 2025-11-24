@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class checkout : AppCompatActivity() {
 
@@ -41,7 +42,7 @@ class checkout : AppCompatActivity() {
 
         btnBack.setOnClickListener { finish() }
 
-        // Prefill from users collection
+        // Prefill from Users collection
         loadUserAddress()
 
         btnNext.setOnClickListener {
@@ -51,17 +52,23 @@ class checkout : AppCompatActivity() {
 
     private fun loadUserAddress() {
         val user = auth.currentUser ?: return
-        // Change "users" to your actual collection name if different
-        db.collection("users").document(user.uid)
+
+        // 🔹 Use "Users" collection (same as ProfileFragment)
+        db.collection("Users")
+            .document(user.uid)
             .get()
             .addOnSuccessListener { doc ->
                 if (doc != null && doc.exists()) {
                     etFullName.setText(doc.getString("fullName") ?: "")
+                    // email from doc or from auth as fallback
                     etEmail.setText(doc.getString("email") ?: user.email ?: "")
                     etPhone.setText(doc.getString("phone") ?: "")
                     etAddress.setText(doc.getString("address") ?: "")
                     etZip.setText(doc.getString("zipCode") ?: "")
                     etCity.setText(doc.getString("city") ?: "")
+                } else {
+                    // no doc yet → at least set email from auth if present
+                    etEmail.setText(user.email ?: "")
                 }
             }
     }
@@ -95,18 +102,22 @@ class checkout : AppCompatActivity() {
             return
         }
 
-        // Optional: save address back to users collection
         val user = auth.currentUser
+
+        // ✅ Save address back to Users collection (but NOT email)
         if (user != null && cbSaveAddress.isChecked) {
             val updates = mapOf(
                 "fullName" to fullName,
-                "email" to email,
                 "phone" to phone,
                 "address" to address,
                 "zipCode" to zip,
                 "city" to city
+                // email stays as it is, not overwritten here
             )
-            db.collection("users").document(user.uid).set(updates, com.google.firebase.firestore.SetOptions.merge())
+
+            db.collection("Users")
+                .document(user.uid)
+                .set(updates, SetOptions.merge())
         }
 
         // Cart totals

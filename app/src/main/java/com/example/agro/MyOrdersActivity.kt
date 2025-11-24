@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.agro.data.OrderItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 
 class MyOrdersActivity : AppCompatActivity() {
 
@@ -58,9 +57,9 @@ class MyOrdersActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         tvEmptyOrders.visibility = View.GONE
 
+        // ⬇️ Removed orderBy() to avoid composite index requirement
         db.collection("orders")
             .whereEqualTo("userId", user.uid)
-            .orderBy("orderDate", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { snapshot ->
                 ordersList.clear()
@@ -69,12 +68,16 @@ class MyOrdersActivity : AppCompatActivity() {
                     tvEmptyOrders.visibility = View.VISIBLE
                     tvEmptyOrders.text = "You have no orders yet"
                 } else {
+                    // temporary list to keep timestamp for sorting
+                    val tempList = mutableListOf<Pair<Long, OrderItem>>()
+
                     for (doc in snapshot.documents) {
                         val id = doc.id
                         val totalAmount = doc.getDouble("totalAmount") ?: 0.0
                         val status = doc.getString("status") ?: "pending"
 
                         val ts = doc.getTimestamp("orderDate")?.toDate()
+                        val orderDateMillis = ts?.time ?: 0L
                         val orderDateText = if (ts != null) {
                             android.text.format.DateFormat
                                 .format("dd MMM yyyy", ts)
@@ -94,8 +97,14 @@ class MyOrdersActivity : AppCompatActivity() {
                             itemCount = itemCount
                         )
 
-                        ordersList.add(orderItem)
+                        tempList.add(orderDateMillis to orderItem)
                     }
+
+                    // 🔽 sort by date (latest first)
+                    tempList.sortByDescending { it.first }
+
+                    // move into ordersList for adapter
+                    ordersList.addAll(tempList.map { it.second })
                 }
 
                 progressBar.visibility = View.GONE

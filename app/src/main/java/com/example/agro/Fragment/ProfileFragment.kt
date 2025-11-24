@@ -36,12 +36,12 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupUserProfile() {
-        // Email should not be editable
+        // Email should NOT be editable
         binding.etEmail.isEnabled = false
         binding.etEmail.isFocusable = false
         binding.etEmail.isFocusableInTouchMode = false
 
-        // Load user data from Firestore "users" collection
+        // Load user data from Firestore "Users" collection (your existing collection)
         loadUserDetails()
 
         // Save / update profile (except email)
@@ -81,17 +81,14 @@ class ProfileFragment : Fragment() {
             return
         }
 
-        // users collection → document = uid
-        db.collection("users")
+        // 🔹 Use your existing "Users" collection (capital U)
+        //    and document id = user.uid
+        db.collection("Users")
             .document(user.uid)
             .get()
             .addOnSuccessListener { doc ->
-                if (!doc.exists()) {
-                    // No profile yet – at least show email from auth
-                    binding.etEmail.setText(user.email ?: "")
-                    return@addOnSuccessListener
-                }
-
+                // Even if doc doesn't exist yet, we won't create here,
+                // we just display auth email at least.
                 val fullName = doc.getString("fullName") ?: ""
                 val email = doc.getString("email") ?: user.email ?: ""
                 val phone = doc.getString("phone") ?: ""
@@ -134,7 +131,7 @@ class ProfileFragment : Fragment() {
             return
         }
 
-        // Only update allowed fields (email stays as it is)
+        // Only update allowed fields (email not changed)
         val updates = mapOf(
             "fullName" to fullName,
             "phone" to phone,
@@ -143,8 +140,8 @@ class ProfileFragment : Fragment() {
             "city" to city
         )
 
-        // Merge so we don't overwrite other fields like createdAt, provider, etc.
-        db.collection("users")
+        // 🔹 This will write into your existing "Users" document for this uid
+        db.collection("Users")
             .document(user.uid)
             .set(updates, SetOptions.merge())
             .addOnSuccessListener {
