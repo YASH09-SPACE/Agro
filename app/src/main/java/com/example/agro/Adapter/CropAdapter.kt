@@ -1,106 +1,81 @@
+// com/example/agro/CropAdapter.kt
 package com.example.agro
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.agro.data.Crop
-// ACTION REQUIRED: Ensure you have View Binding enabled in your build.gradle for this import to work.
-import com.example.agro.databinding.ItemCropBinding
-// import com.bumptech.glide.Glide // Recommended for image loading
 
-///**
-// * Adapter for displaying a grid of Crop items in a RecyclerView.
-// *
-// * @param crops The list of Crop objects to display.
-// * @param itemClickListener A lambda function to handle clicks on individual crop items.
-// */
-//class CropAdapter(
-//    private val crops: List<Crop>,
-//    private val itemClickListener: (Crop) -> Unit
-//) : RecyclerView.Adapter<CropAdapter.CropViewHolder>() {
-//
-//    // 1. ViewHolder: Caches the views and binds the data for a single item.
-//    inner class CropViewHolder(private val binding: ItemCropBinding) :
-//        RecyclerView.ViewHolder(binding.root) {
-//
-//        fun bind(crop: Crop) {
-//            // Set the crop name
-//            binding.tvCropName.text = crop.name
-//
-//            // 2. Image Loading (Placeholder for Glide or Picasso implementation)
-//            // Example using Glide:
-//            // Glide.with(binding.ivCropImage.context)
-//            //    .load(crop.imageUrl)
-//            //    .placeholder(R.drawable.img_placeholder)
-//            //    .into(binding.ivCropImage)
-//
-//            // To test, you might set a static placeholder image for now:
-//            // binding.ivCropImage.setImageResource(R.drawable.img_placeholder)
-//
-//            // 3. Click Listener: Executes the lambda when the card is clicked.
-//            binding.root.setOnClickListener {
-//                itemClickListener(crop)
-//            }
-//        }
-//    }
-//
-//    // 2. onCreateViewHolder: Inflates the item layout and creates the ViewHolder.
-//    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CropViewHolder {
-//        val binding = ItemCropBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-//        return CropViewHolder(binding)
-//    }
-//
-//    // 3. onBindViewHolder: Binds the data at a specific position to the ViewHolder's views.
-//    override fun onBindViewHolder(holder: CropViewHolder, position: Int) {
-//        holder.bind(crops[position])
-//    }
-//
-//    // 4. getItemCount: Returns the total number of items in the list.
-//    override fun getItemCount(): Int = crops.size
-//}
-
-
-/**
- * Adapter for displaying a grid of Crop items in a RecyclerView.
- *
- * @param crops The list of Crop objects to display.
- * @param itemClickListener A lambda function to handle clicks on individual crop items.
- */
 class CropAdapter(
-    private val crops: List<Crop>,
-    private val itemClickListener: (Crop) -> Unit
+    private val onItemClick: (Crop) -> Unit
 ) : RecyclerView.Adapter<CropAdapter.CropViewHolder>() {
 
-    inner class CropViewHolder(private val binding: ItemCropBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    private val fullList = mutableListOf<Crop>()
+    private val displayList = mutableListOf<Crop>()
+    private var lastQuery: String = ""
+
+    inner class CropViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val ivCropImage: ImageView = itemView.findViewById(R.id.ivCropImage)
+        private val tvCropName: TextView = itemView.findViewById(R.id.tvCropName)
 
         fun bind(crop: Crop) {
-            // Set crop name
-            binding.tvCropName.text = crop.name
+            tvCropName.text = crop.name
 
-            // Load image (use static placeholder for now)
-            // Glide.with(binding.ivCropImage.context)
-            //     .load(crop.imageUrl)
-            //     .placeholder(R.drawable.img_placeholder)
-            //     .into(binding.ivCropImage)
-            // OR:
-            // binding.ivCropImage.setImageResource(R.drawable.img_placeholder)
+            Glide.with(itemView.context)
+                .load(crop.imageUrl)
+                .placeholder(R.drawable.ic_date) // your placeholder
+                .into(ivCropImage)
 
-            // Handle card click
-            binding.root.setOnClickListener {
-                itemClickListener(crop)
-            }
+            itemView.setOnClickListener { onItemClick(crop) }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CropViewHolder {
-        val binding = ItemCropBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CropViewHolder(binding)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_crop, parent, false)
+        return CropViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: CropViewHolder, position: Int) {
-        holder.bind(crops[position])
+        holder.bind(displayList[position])
     }
 
-    override fun getItemCount(): Int = crops.size
+    override fun getItemCount(): Int = displayList.size
+
+    fun setData(newList: List<Crop>) {
+        fullList.clear()
+        fullList.addAll(newList)
+        applyFilter(lastQuery)
+    }
+
+    fun filterCrops(query: String) {
+        lastQuery = query
+        applyFilter(query)
+    }
+
+    private fun applyFilter(query: String) {
+        val q = query.trim().lowercase()
+        displayList.clear()
+
+        if (q.isEmpty()) {
+            displayList.addAll(fullList)
+        } else {
+            val startsWith = fullList.filter {
+                it.name.lowercase().startsWith(q)
+            }
+            val contains = fullList.filter {
+                it.name.lowercase().contains(q) && !startsWith.contains(it)
+            }
+            val others = fullList.filter {
+                !it.name.lowercase().contains(q)
+            }
+            displayList.addAll(startsWith + contains + others)
+        }
+
+        notifyDataSetChanged()
+    }
 }

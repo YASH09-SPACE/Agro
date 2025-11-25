@@ -1,57 +1,43 @@
-<!--
-Layout for a single crop item in the RecyclerView grid.
-Uses CardView to provide elevation and rounded corners.
--->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
+    app:cardCornerRadius="12dp"
     android:clickable="true"
-    android:focusable="true"
     android:foreground="?attr/selectableItemBackground">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
-        <!-- Crop Image (takes up most of the card) -->
         <ImageView
             android:id="@+id/ivCropImage"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
             android:contentDescription="Crop Image"
-            android:src="@drawable/ic_date"
-            android:background="#f0f0f0"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintDimensionRatio="1:1"
-            />
+            app:layout_constraintDimensionRatio="1:1"/>
 
-        <!-- Crop Name (aligned to the bottom left) -->
         <TextView
             android:id="@+id/tvCropName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="12dp"
-            android:paddingTop="8dp"
-            android:textStyle="bold"
             android:textSize="14sp"
             android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:padding="12dp"
+            android:gravity="center"
             android:background="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/ivCropImage"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivCropImage"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Date Palm" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.cardview.widget.CardView>

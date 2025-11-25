@@ -1,12 +1,14 @@
+// com/example/agro/Fragment/PracticesFragment.kt
 package com.example.agro.Fragment
 
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,30 +16,33 @@ import com.example.agro.CropAdapter
 import com.example.agro.CropDetailsActivity
 import com.example.agro.data.Crop
 import com.example.agro.databinding.FragmentPracticesBinding
+import com.google.firebase.firestore.FirebaseFirestore
 
 class PracticesFragment : Fragment() {
 
     private var _binding: FragmentPracticesBinding? = null
     private val binding get() = _binding!!
-    private val TAG = "PracticesFragment"
+
+    private lateinit var cropAdapter: CropAdapter
+    private val db: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPracticesBinding.inflate(inflater, container, false)
-        val view = binding.root
 
         setupRecyclerView()
-        return view
+        setupSearch()
+        loadCropsFromFirestore()
+
+        return binding.root
     }
 
     private fun setupRecyclerView() {
-        val cropList = generateSampleCrops()
-
-        val adapter = CropAdapter(cropList) { crop ->
-            // On crop click → open CropDetailsActivity
+        cropAdapter = CropAdapter { crop ->
             val intent = Intent(requireContext(), CropDetailsActivity::class.java)
+            intent.putExtra("crop_id", crop.id)
             intent.putExtra("crop_name", crop.name)
             intent.putExtra("crop_image", crop.imageUrl)
             startActivity(intent)
@@ -45,24 +50,37 @@ class PracticesFragment : Fragment() {
 
         binding.rvCropGrid.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
-            this.adapter = adapter
+            adapter = cropAdapter
             addItemDecoration(GridSpacingItemDecoration(2, 16, true))
         }
     }
 
-    private fun generateSampleCrops(): List<Crop> {
-        return listOf(
-            Crop("Date Palm", "url_date_palm_img"),
-            Crop("Coffee", "url_coffee_img"),
-            Crop("Rubber", "url_rubber_img"),
-            Crop("Coconut", "url_coconut_img"),
-            Crop("Cinnamon", "url_cinnamon_img"),
-            Crop("Cocoa", "url_cocoa_img"),
-            Crop("Cardamom", "url_cardamom_img"),
-            Crop("Tea", "url_tea_img")
-        )
+    private fun setupSearch() {
+        binding.etSearchCrop.addTextChangedListener { text ->
+            val query = text?.toString() ?: ""
+            cropAdapter.filterCrops(query)
+        }
     }
 
+    private fun loadCropsFromFirestore() {
+        db.collection("crops")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val cropList = snapshot.documents.map { doc ->
+                    Crop(
+                        id = doc.id,
+                        name = doc.getString("name") ?: "",
+                        imageUrl = doc.getString("imageUrl") ?: ""
+                    )
+                }
+
+                cropAdapter.setData(cropList)
+            }
+            .addOnFailureListener { e ->
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Failed to load crops", Toast.LENGTH_SHORT).show()
+            }
+    }
 
     class GridSpacingItemDecoration(
         private val spanCount: Int,

@@ -1,4 +1,5 @@
-package com.example.agro.adapter
+// com/example/agro/Adapter/ParagraphAdapter.kt
+package com.example.agro.Adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,13 +7,17 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.agro.R
-import com.example.agro.model.Paragraph
 
-class ParagraphAdapter(private val paragraphs: List<Paragraph>) :
-    RecyclerView.Adapter<ParagraphAdapter.ParagraphViewHolder>() {
+class ParagraphAdapter(
+    private val items: MutableList<String> = mutableListOf()
+) : RecyclerView.Adapter<ParagraphAdapter.ParagraphViewHolder>() {
 
     inner class ParagraphViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val paragraphText: TextView = itemView.findViewById(R.id.paragraphText)
+        private val tvParagraph: TextView = itemView.findViewById(R.id.tvParagraph)
+
+        fun bind(text: String) {
+            tvParagraph.text = text
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParagraphViewHolder {
@@ -22,9 +27,14 @@ class ParagraphAdapter(private val paragraphs: List<Paragraph>) :
     }
 
     override fun onBindViewHolder(holder: ParagraphViewHolder, position: Int) {
-        val paragraph = paragraphs[position]
-        holder.paragraphText.text = paragraph.text
+        holder.bind(items[position])
     }
 
-    override fun getItemCount(): Int = paragraphs.size
+    override fun getItemCount(): Int = items.size
+
+    fun submitList(newItems: List<String>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
+    }
 }
