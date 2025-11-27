@@ -78,16 +78,18 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/remove_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed">
 
         <ImageButton
             android:id="@+id/decrease_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_minus" />
+            android:src="@drawable/ic_minus"
+            app:tint="#7D8FAB"/>
 
         <TextView
             android:id="@+id/quantity_text"
@@ -96,13 +98,31 @@
             android:layout_marginHorizontal="8dp"
             android:text="3"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            app:tint="#7D8FAB"/>
 
         <ImageButton
             android:id="@+id/increase_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_plus" />
+            android:src="@drawable/ic_plus"
+            app:tint="#7D8FAB"/>
     </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/remove_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Remove Item"
+        android:padding="8dp"
+        android:src="@drawable/ic_bin"
+        app:tint="#7D8FAB"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/quantity_container"
+        app:layout_constraintStart_toStartOf="@+id/quantity_container"
+        app:layout_constraintTop_toBottomOf="@+id/quantity_container" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

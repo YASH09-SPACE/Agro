@@ -38,7 +38,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="4dp"
-                android:text="Louis A. 👋"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -79,26 +78,16 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <HorizontalScrollView
-                android:id="@+id/scrollCategories"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCategories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:scrollbars="none">
+                android:paddingHorizontal="16dp"
+                android:nestedScrollingEnabled="false"
+                android:clipToPadding="false"
+                tools:listitem="@layout/item_category" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp">
-
-                    <include layout="@layout/item_category" />
-                    <include layout="@layout/item_category" />
-                    <include layout="@layout/item_category" />
-                    <include layout="@layout/item_category" />
-
-                </LinearLayout>
-            </HorizontalScrollView>
 
             <!-- Popular Deals -->
             <TextView

@@ -150,13 +150,15 @@
                 android:textColor="#000"
                 android:textSize="14sp"
                 android:layout_marginTop="12dp" />
+
             <EditText
+                android:id="@+id/etFullName"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:hint="Louis Anderson"
                 android:background="@drawable/bg_search"
+                android:hint="Enter Your Name"
                 android:padding="12dp"
-                android:textColor="#000"/>
+                android:textColor="#000" />
 
             <!-- Email -->
             <TextView
@@ -166,13 +168,15 @@
                 android:textColor="#000"
                 android:textSize="14sp"
                 android:layout_marginTop="12dp"/>
+
             <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:hint="louisanderson@mail.com"
                 android:background="@drawable/bg_search"
-                android:padding="12dp"
-                android:inputType="textEmailAddress"/>
+                android:hint="Enter Your Email"
+                android:inputType="textEmailAddress"
+                android:padding="12dp" />
 
             <!-- Phone -->
             <TextView
@@ -182,13 +186,15 @@
                 android:textColor="#000"
                 android:textSize="14sp"
                 android:layout_marginTop="12dp"/>
+
             <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:hint="Enter your phone number"
                 android:background="@drawable/bg_search"
-                android:padding="12dp"
-                android:inputType="phone"/>
+                android:hint="Enter your phone number"
+                android:inputType="phone"
+                android:padding="12dp" />
 
             <!-- Address -->
             <TextView
@@ -199,9 +205,9 @@
                 android:textSize="14sp"
                 android:layout_marginTop="12dp"/>
 
-            <!-- Zip & City -->
             <EditText
-                android:layout_width="wrap_content"
+                android:id="@+id/etAddress"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_search"
                 android:gravity="top|start"
@@ -237,6 +243,7 @@
                             android:textSize="14sp"/>
 
                         <EditText
+                            android:id="@+id/etZip"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Enter zip code"
@@ -264,6 +271,7 @@
                             android:textSize="14sp"/>
 
                         <EditText
+                            android:id="@+id/etCity"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Enter city"
@@ -276,14 +284,14 @@
             </LinearLayout>
 
             <CheckBox
+                android:id="@+id/cbSaveAddress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Save shipping address"
                 android:checked="true"
                 android:textColor="#000"
-                app:buttonTint="@color/green"
-                />
+                app:buttonTint="@color/green" />
 
             <!-- Next Button -->
             <Button

@@ -7,22 +7,25 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import androidx.compose.ui.unit.IntRect
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.agro.*
+import com.example.agro.Model.CartItem
 import com.example.agro.R
 import com.example.agro.data.BannerItem
+import com.example.agro.data.Category
 import com.example.agro.data.Product
 import com.example.agro.databinding.FragmentHomeBinding
-
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
+
     private var _binding: FragmentHomeBinding? = null
-    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
     private lateinit var bannerSlider: ViewPager2
@@ -30,14 +33,26 @@ class HomeFragment : Fragment() {
     private val handler = Handler(Looper.getMainLooper())
     private val scrollDelay = 3000L // 3 seconds
 
+    // Firebase
+    private val db: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+
+    // Products (grid)
+    private val productList = mutableListOf<Product>()
+    private lateinit var productsAdapter: mainAdapter
+
+    // Categories (horizontal) derived from products
+    private val categoryList = mutableListOf<Category>()
+    private lateinit var categoryAdapter: CategoryAdapter
+
     private val autoScrollRunnable = object : Runnable {
         override fun run() {
-            if (_binding != null) { // Check if binding is not null
-                val bannerSlider = binding.bannerSlider
-                val itemCount = bannerSlider.adapter?.itemCount ?: 0
+            if (_binding != null) {
+                val slider = binding.bannerSlider
+                val itemCount = slider.adapter?.itemCount ?: 0
                 if (itemCount > 0) {
-                    val nextItem = (bannerSlider.currentItem + 1) % itemCount
-                    bannerSlider.currentItem = nextItem
+                    val nextItem = (slider.currentItem + 1) % itemCount
+                    slider.currentItem = nextItem
                 }
                 handler.postDelayed(this, scrollDelay)
             }
@@ -57,12 +72,14 @@ class HomeFragment : Fragment() {
             startActivity(i)
         }
 
+        // 0. Load user name
+        loadUserNameFromFirestore()
 
         // --- Initialize Views ---
         bannerSlider = view.findViewById(R.id.bannerSlider)
         recyclerView = view.findViewById(R.id.rvProducts)
 
-        // --- Banner List ---
+        // 1. Banner slider
         val listOfBanners = listOf(
             BannerItem("Happy Weekend", "20% OFF", R.color.banner_blue),
             BannerItem("New Arrivals", "Free Shipping", R.color.banner_green),
@@ -70,7 +87,6 @@ class HomeFragment : Fragment() {
         )
         binding.bannerSlider.adapter = BannerAdapter(listOfBanners)
 
-        // --- Auto-scroll pause/resume ---
         binding.bannerSlider.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageScrollStateChanged(state: Int) {
                 when (state) {
@@ -80,44 +96,162 @@ class HomeFragment : Fragment() {
             }
         })
 
+        // 2. Categories (horizontal, from products)
+        categoryAdapter = CategoryAdapter(categoryList) { category ->
+            // later: filter products by category.title if you want
+        }
 
-        // --- RecyclerView setup ---
-        val items = listOf(
-            Product("Zincacea", R.drawable.ic_product, "₹1000", "Add to Cart"),
-            Product("Fertilizer A", R.drawable.ic_product, "₹750", "Add to Cart"),
-            Product("Fertilizer B", R.drawable.ic_product, "₹500", "Add to Cart"),
-            Product("Crop Booster", R.drawable.ic_product, "₹1200", "Add to Cart"),
-            Product("Seeds Pack", R.drawable.ic_product, "₹300", "Add to Cart")
-        )
+        binding.rvCategories.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.rvCategories.adapter = categoryAdapter
 
-        val adapter = mainAdapter(items)
+        // 3. Products (grid) from Firestore
+        productsAdapter = mainAdapter(productList)
         binding.rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvProducts.adapter = adapter
+        binding.rvProducts.adapter = productsAdapter
 
+        loadProductsFromFirestore()
 
-        // =================================================================
-        // === NEW CODE ADDED FOR REDIRECTION ==============================
-        // =================================================================
-        binding.rvProducts.addOnChildAttachStateChangeListener(object : RecyclerView.OnChildAttachStateChangeListener {
+        // 4. Item click + Add to Cart (per item)
+        binding.rvProducts.addOnChildAttachStateChangeListener(object :
+            RecyclerView.OnChildAttachStateChangeListener {
             override fun onChildViewAttachedToWindow(view: View) {
                 val addToCartButton = view.findViewById<View>(R.id.btnAddToCart)
+
+                // 🔹 Add to cart button
                 addToCartButton?.setOnClickListener {
-                    // Start your Cart Activity
-                    val intent = Intent(requireContext(), CartFragment::class.java)
+                    val pos = binding.rvProducts.getChildAdapterPosition(view)
+                    if (pos == RecyclerView.NO_POSITION || pos >= productList.size) return@setOnClickListener
+
+                    val product = productList[pos]
+
+                    CartManager.addToCart(
+                        CartItem(
+                            productId = product.productId,
+                            imageResId = 0,                 // we rely on imageUrl
+                            imageUrl = product.imageUrl,
+                            name = product.name,
+                            category = product.category,
+                            price = product.price,
+                            quantity = 1,
+                            stockQuantity = product.stockQuantity
+                        )
+                    )
+                    Toast.makeText(requireContext(), "${product.name} added to cart", Toast.LENGTH_SHORT).show()
+                }
+
+                // 🔹 Whole card click → open product_detail
+                view.setOnClickListener {
+                    val pos = binding.rvProducts.getChildAdapterPosition(view)
+                    if (pos == RecyclerView.NO_POSITION || pos >= productList.size) return@setOnClickListener
+
+                    val product = productList[pos]
+
+                    val intent = Intent(requireContext(), product_detail::class.java).apply {
+                        putExtra("productId", product.productId)
+                        putExtra("name", product.name)
+                        putExtra("category", product.category)
+                        putExtra("price", product.price)
+                        putExtra("imageUrl", product.imageUrl)
+                        putExtra("description", product.description)
+                        putExtra("stockQuantity", product.stockQuantity)
+                    }
                     startActivity(intent)
                 }
             }
 
             override fun onChildViewDetachedFromWindow(view: View) {
                 view.findViewById<View>(R.id.btnAddToCart)?.setOnClickListener(null)
+                view.setOnClickListener(null)
             }
         })
 
         return view
     }
-        // =================================================================
-        // === END OF NEW CODE =============================================
-        // =================================================================
+
+    /**
+     * Fetch products from Firestore "product" collection.
+     * Also builds category list by grouping categories and summing stockQuantity.
+     */
+    private fun loadProductsFromFirestore() {
+        db.collection("product")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                productList.clear()
+
+                val categoryStockMap = mutableMapOf<String, Int>()
+
+                for (doc in querySnapshot) {
+                    val name = doc.getString("name") ?: continue
+                    val priceDouble = doc.getDouble("price") ?: 0.0
+                    val category = doc.getString("category") ?: "General"
+                    val stockQty = (doc.getLong("stockQuantity") ?: 0L).toInt()
+                    val productId = doc.id
+                    val imageUrl = doc.getString("imageUrl") ?: ""
+                    val description = doc.getString("description") ?: ""
+
+                    productList.add(
+                        Product(
+                            name = name,
+                            imageUrl = imageUrl,
+                            price = priceDouble,
+                            productId = productId,
+                            stockQuantity = stockQty,
+                            category = category,
+                            description = description
+                        )
+                    )
+
+                    categoryStockMap[category] = (categoryStockMap[category] ?: 0) + stockQty
+                }
+
+                productsAdapter.notifyDataSetChanged()
+
+                categoryList.clear()
+                categoryStockMap.forEach { (catName, totalStock) ->
+                    categoryList.add(
+                        Category(
+                            title = catName,
+                            itemCount = totalStock,
+                            iconResId = R.drawable.ic_crop_tonics
+                        )
+                    )
+                }
+                categoryAdapter.notifyDataSetChanged()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(
+                    requireContext(),
+                    "Failed to load products: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+    }
+
+    /**
+     * Load logged-in user's name from Firestore "Users" collection
+     * and show it in tvUserName.
+     */
+    private fun loadUserNameFromFirestore() {
+        val currentUser = auth.currentUser ?: return
+
+        db.collection("Users")
+            .document(currentUser.uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val fullName = snapshot.getString("fullName")
+                        ?: snapshot.getString("name")
+                        ?: snapshot.getString("email")
+                        ?: "User"
+
+                    binding.tvUserName.text = "$fullName 👋"
+                }
+            }
+            .addOnFailureListener {
+                // keep default if needed
+            }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -128,14 +262,13 @@ class HomeFragment : Fragment() {
         super.onPause()
         handler.removeCallbacks(autoScrollRunnable)
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
     companion object {
-        fun newInstance(): HomeFragment {
-            return HomeFragment()
-        }
+        fun newInstance(): HomeFragment = HomeFragment()
     }
 }
