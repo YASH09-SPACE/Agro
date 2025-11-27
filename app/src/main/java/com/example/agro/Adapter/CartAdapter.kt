@@ -7,6 +7,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.agro.Model.CartItem
 import com.example.agro.R
 
@@ -35,20 +36,31 @@ class CartAdapter(
     override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
         val item = cartList[position]
 
-        holder.productImage.setImageResource(item.imageResId)
+        // 🔹 Load image (URL first, then drawable)
+        if (!item.imageUrl.isNullOrEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(item.imageUrl)
+                .placeholder(R.drawable.ic_product)
+                .error(R.drawable.ic_product)
+                .into(holder.productImage)
+        } else {
+            val resId = item.imageResId ?: R.drawable.ic_product
+            holder.productImage.setImageResource(resId)
+        }
+
         holder.productName.text = item.name
         holder.productCategory.text = item.category
         holder.productPrice.text = "₹${item.price.toInt()}"
         holder.quantityText.text = item.quantity.toString()
 
-        // Increase quantity
+        // ➕ Increase quantity
         holder.increaseBtn.setOnClickListener {
             item.quantity++
             notifyItemChanged(holder.bindingAdapterPosition)
             onCartChanged()
         }
 
-        // Decrease quantity
+        // ➖ Decrease quantity
         holder.decreaseBtn.setOnClickListener {
             if (item.quantity > 1) {
                 item.quantity--
@@ -57,7 +69,7 @@ class CartAdapter(
             }
         }
 
-        // Remove item
+        // ❌ Remove item
         holder.removeBtn.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) {

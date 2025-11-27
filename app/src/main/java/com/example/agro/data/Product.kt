@@ -1,11 +1,12 @@
 package com.example.agro.data
 
+// com.example.agro.data.Product
 data class Product(
-    val name: String = "",
-    val image: Int = 0,
-    val price: String = "",
-    val buttonText: String = "",
-    val productId: String = "",      // 🔹 new
-    val stockQuantity: Int = 0,      // 🔹 new (you already use this)
-    val category: String = ""        // 🔹 new (you already fetch this)
+    val name: String,
+    val imageUrl: String,        // <-- image from Firestore
+    val price: Double,
+    val productId: String,
+    val stockQuantity: Int,
+    val category: String,
+    val description: String = "" // optional
 )

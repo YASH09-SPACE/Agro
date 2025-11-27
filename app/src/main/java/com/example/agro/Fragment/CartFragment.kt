@@ -14,6 +14,7 @@ import com.example.agro.Adapter.CartAdapter
 import com.example.agro.CartManager
 import com.example.agro.R
 import com.example.agro.checkout
+import android.widget.Toast
 
 class CartFragment : Fragment() {
 
@@ -43,17 +44,20 @@ class CartFragment : Fragment() {
         // --- RecyclerView setup ---
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Use CartManager's global list instead of hardcoded items
         val adapter = CartAdapter(CartManager.cartItems) {
             updateTotals()
         }
         recyclerView.adapter = adapter
 
-        // Calculate totals initially
         updateTotals()
 
         // --- Checkout Button ---
         checkoutButton.setOnClickListener {
+            if (CartManager.cartItems.isEmpty()) {
+                Toast.makeText(requireContext(), "Your cart is empty!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val intent = Intent(requireContext(), checkout::class.java)
             startActivity(intent)
         }
@@ -62,9 +66,18 @@ class CartFragment : Fragment() {
     }
 
     private fun updateTotals() {
-        // 🔥 1. Check stock for all items
-        var outOfStock = false
 
+        // ❌ If cart is empty
+        if (CartManager.cartItems.isEmpty()) {
+            tvSubtotal.text = "₹0"
+            tvTax.text = "+ ₹0"
+            tvTotal.text = "₹0"
+            checkoutButton.isEnabled = false   // Disable checkout
+            return
+        }
+
+        // ♻ Check stock availability
+        var outOfStock = false
         for (item in CartManager.cartItems) {
             if (item.quantity > item.stockQuantity) {
                 outOfStock = true
@@ -73,19 +86,18 @@ class CartFragment : Fragment() {
         }
 
         if (outOfStock) {
-            // 🔴 Over-stock: show message and disable checkout
             tvSubtotal.text = "–"
             tvTax.text = "–"
-            tvTotal.text = "Not in stock"
+            tvTotal.text = "Out of Stock"
             checkoutButton.isEnabled = false
             return
-        } else {
-            checkoutButton.isEnabled = true
         }
 
-        // 🔥 2. Normal total calculation
+        checkoutButton.isEnabled = true
+
+        // ✔ Calculate totals normally
         val subtotal = CartManager.getTotal()
-        val tax = subtotal * 0.02       // 2% tax
+        val tax = subtotal * 0.02
         val total = subtotal + tax
 
         tvSubtotal.text = "₹${subtotal.toInt()}"

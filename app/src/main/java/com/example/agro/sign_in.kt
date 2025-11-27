@@ -34,6 +34,9 @@ class sign_in : AppCompatActivity() {
         binding.createAccount.setOnClickListener {
             startActivity(Intent(this, sign_up::class.java))
         }
+        binding.forgotPassword.setOnClickListener {
+            startActivity(Intent(this, ForgotPassword::class.java))
+        }
     }
 
     override fun onStart() {

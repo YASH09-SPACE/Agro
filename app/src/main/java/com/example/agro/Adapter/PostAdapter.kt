@@ -1,85 +1,83 @@
 package com.example.agro
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.agro.data.Post
-import com.example.agro.databinding.ItemCommunityPostBinding
+import com.bumptech.glide.Glide
 
-// Adapter for displaying community posts in a RecyclerView
-class PostAdapter(private val posts: MutableList<Post>) :
-    RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+class PostAdapter(
+    private var items: MutableList<Post>,
+    private val listener: PostListener
+) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
-    // ViewHolder class to hold and bind views for each post item
-    inner class PostViewHolder(private val binding: ItemCommunityPostBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    interface PostListener {
+        fun onPostClicked(post: Post)
+        fun onLikeClicked(post: Post)
+        fun onCommentClicked(post: Post)
+    }
+
+    fun updateData(newList: List<Post>) {
+        items = newList.toMutableList()
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_community_post, parent, false)
+        return PostViewHolder(view)
+    }
+
+    override fun getItemCount(): Int = items.size
+
+    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
+        holder.bind(items[position])
+    }
+
+    inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+        private val tvUserName: TextView = itemView.findViewById(R.id.tvUserName)
+        private val tvPostDate: TextView = itemView.findViewById(R.id.tvPostDate)
+        private val tvDescription: TextView = itemView.findViewById(R.id.tvDescription)
+        private val tvLikes: TextView = itemView.findViewById(R.id.tvLikes)
+        private val tvComments: TextView = itemView.findViewById(R.id.tvComments)
+        private val btnLike: ImageButton = itemView.findViewById(R.id.btnLike)
+        private val btnComment: ImageButton = itemView.findViewById(R.id.btnComment)
+        private val ivPostImage: ImageView = itemView.findViewById(R.id.ivPostImage)
 
         fun bind(post: Post) {
-            // Bind text data
-            binding.tvUserName.text = post.userName
-            binding.tvPostDate.text = post.postDate
-            binding.tvDescription.text = post.description
+            tvUserName.text = post.userName
+            tvDescription.text = post.description
+            tvLikes.text = "${post.likeCount} Likes"
+            tvComments.text = "${post.commentCount} Comments"
 
-            // Load image (if you plan to use Glide or similar)
-            // Glide.with(binding.ivPostImage.context)
-            //     .load(post.imageUrl)
-            //     .placeholder(R.drawable.img_placeholder)
-            //     .into(binding.ivPostImage)
-
-            // Set initial like button state
-            updateLikeButton(post.isLiked)
-
-            // Handle Like button click
-            binding.btnLike.setOnClickListener {
-                val newIsLiked = !post.isLiked
-                posts[adapterPosition].isLiked = newIsLiked
-                updateLikeButton(newIsLiked)
-
-                // TODO: Add API call or database update here
+            // CreatedAt display (optional)
+            post.createdAt?.toDate()?.let {
+                val text = android.text.format.DateFormat.format("dd MMM yyyy", it)
+                tvPostDate.text = text
             }
 
-            // Handle Comment button click
-            binding.btnComment.setOnClickListener {
-                // TODO: Add navigation or comment dialog here
-            }
-
-            // Handle Bookmark button click (if added)
-            // binding.btnBookmark.setOnClickListener {
-            //     // TODO: Add bookmark functionality here
-            // }
-        }
-
-        // Updates the like button UI based on current state
-        private fun updateLikeButton(isLiked: Boolean) {
-            if (isLiked) {
-                binding.btnLike.setImageResource(R.drawable.ic_heart_filled)
-                binding.btnLike.setColorFilter(
-                    binding.root.context.getColor(android.R.color.holo_red_dark)
-                )
+            if (!post.imageUrl.isNullOrEmpty()) {
+                ivPostImage.visibility = View.VISIBLE
+                Glide.with(itemView.context)
+                    .load(post.imageUrl)
+                    .into(ivPostImage)
             } else {
-                binding.btnLike.setImageResource(R.drawable.ic_heart_outline)
-                binding.btnLike.setColorFilter(
-                    binding.root.context.getColor(android.R.color.darker_gray)
-                )
+                ivPostImage.visibility = View.GONE
             }
+
+            btnLike.setImageResource(
+                if (post.isLikedByCurrentUser) R.drawable.ic_heart_filled
+                else R.drawable.ic_heart_outline
+            )
+
+            itemView.setOnClickListener { listener.onPostClicked(post) }
+            btnLike.setOnClickListener { listener.onLikeClicked(post) }
+            btnComment.setOnClickListener { listener.onCommentClicked(post) }
         }
     }
-
-    // Inflates layout using View Binding
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val binding = ItemCommunityPostBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return PostViewHolder(binding)
-    }
-
-    // Binds data to ViewHolder for a specific position
-    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(posts[position])
-    }
-
-    // Returns total number of items
-    override fun getItemCount(): Int = posts.size
 }

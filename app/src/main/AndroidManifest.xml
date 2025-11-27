@@ -15,6 +15,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Agro">
         <activity
+            android:name=".ForgotPassword"
+            android:exported="false" />
+        <activity
+            android:name=".my_posts"
+            android:exported="false" />
+        <activity
+            android:name=".product_detail"
+            android:exported="false" />
+        <activity
+            android:name=".post_detail"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".create_post"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
             android:name=".MyOrdersActivity"
             android:exported="false" />
         <activity

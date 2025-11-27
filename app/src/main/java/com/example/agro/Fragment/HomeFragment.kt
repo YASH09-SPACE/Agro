@@ -48,11 +48,11 @@ class HomeFragment : Fragment() {
     private val autoScrollRunnable = object : Runnable {
         override fun run() {
             if (_binding != null) {
-                val bannerSlider = binding.bannerSlider
-                val itemCount = bannerSlider.adapter?.itemCount ?: 0
+                val slider = binding.bannerSlider
+                val itemCount = slider.adapter?.itemCount ?: 0
                 if (itemCount > 0) {
-                    val nextItem = (bannerSlider.currentItem + 1) % itemCount
-                    bannerSlider.currentItem = nextItem
+                    val nextItem = (slider.currentItem + 1) % itemCount
+                    slider.currentItem = nextItem
                 }
                 handler.postDelayed(this, scrollDelay)
             }
@@ -72,18 +72,14 @@ class HomeFragment : Fragment() {
             startActivity(i)
         }
 
-        // ===========================
-        // 0. LOAD USER NAME
-        // ===========================
+        // 0. Load user name
         loadUserNameFromFirestore()
 
         // --- Initialize Views ---
         bannerSlider = view.findViewById(R.id.bannerSlider)
         recyclerView = view.findViewById(R.id.rvProducts)
 
-        // ===========================
-        // 1. BANNER SLIDER
-        // ===========================
+        // 1. Banner slider
         val listOfBanners = listOf(
             BannerItem("Happy Weekend", "20% OFF", R.color.banner_blue),
             BannerItem("New Arrivals", "Free Shipping", R.color.banner_green),
@@ -100,59 +96,73 @@ class HomeFragment : Fragment() {
             }
         })
 
-        // ===========================
-        // 2. CATEGORIES (HORIZONTAL, FROM PRODUCTS)
-        // ===========================
+        // 2. Categories (horizontal, from products)
         categoryAdapter = CategoryAdapter(categoryList) { category ->
-            // later: filter products by category.title
+            // later: filter products by category.title if you want
         }
 
         binding.rvCategories.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
         binding.rvCategories.adapter = categoryAdapter
 
-        // ===========================
-        // 3. PRODUCTS (GRID) FROM FIRESTORE
-        // ===========================
+        // 3. Products (grid) from Firestore
         productsAdapter = mainAdapter(productList)
         binding.rvProducts.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvProducts.adapter = productsAdapter
 
         loadProductsFromFirestore()
 
-        // ===========================
-        // 4. ADD TO CART BUTTON (PER ITEM)
-        // ===========================
+        // 4. Item click + Add to Cart (per item)
         binding.rvProducts.addOnChildAttachStateChangeListener(object :
             RecyclerView.OnChildAttachStateChangeListener {
             override fun onChildViewAttachedToWindow(view: View) {
                 val addToCartButton = view.findViewById<View>(R.id.btnAddToCart)
+
+                // 🔹 Add to cart button
                 addToCartButton?.setOnClickListener {
                     val pos = binding.rvProducts.getChildAdapterPosition(view)
                     if (pos == RecyclerView.NO_POSITION || pos >= productList.size) return@setOnClickListener
 
                     val product = productList[pos]
 
-                    val priceValue = product.price.replace("₹", "").trim().toDouble()
-
                     CartManager.addToCart(
                         CartItem(
-                            productId = product.productId,          // 🔹 from Firestore
-                            imageResId = product.image,
+                            productId = product.productId,
+                            imageResId = 0,                 // we rely on imageUrl
+                            imageUrl = product.imageUrl,
                             name = product.name,
-                            category = product.category,            // 🔹 use real category
-                            price = priceValue,
+                            category = product.category,
+                            price = product.price,
                             quantity = 1,
-                            stockQuantity = product.stockQuantity   // 🔹 used in stock check
+                            stockQuantity = product.stockQuantity
                         )
                     )
                     Toast.makeText(requireContext(), "${product.name} added to cart", Toast.LENGTH_SHORT).show()
+                }
+
+                // 🔹 Whole card click → open product_detail
+                view.setOnClickListener {
+                    val pos = binding.rvProducts.getChildAdapterPosition(view)
+                    if (pos == RecyclerView.NO_POSITION || pos >= productList.size) return@setOnClickListener
+
+                    val product = productList[pos]
+
+                    val intent = Intent(requireContext(), product_detail::class.java).apply {
+                        putExtra("productId", product.productId)
+                        putExtra("name", product.name)
+                        putExtra("category", product.category)
+                        putExtra("price", product.price)
+                        putExtra("imageUrl", product.imageUrl)
+                        putExtra("description", product.description)
+                        putExtra("stockQuantity", product.stockQuantity)
+                    }
+                    startActivity(intent)
                 }
             }
 
             override fun onChildViewDetachedFromWindow(view: View) {
                 view.findViewById<View>(R.id.btnAddToCart)?.setOnClickListener(null)
+                view.setOnClickListener(null)
             }
         })
 
@@ -169,7 +179,6 @@ class HomeFragment : Fragment() {
             .addOnSuccessListener { querySnapshot ->
                 productList.clear()
 
-                // category -> total stock
                 val categoryStockMap = mutableMapOf<String, Int>()
 
                 for (doc in querySnapshot) {
@@ -177,43 +186,37 @@ class HomeFragment : Fragment() {
                     val priceDouble = doc.getDouble("price") ?: 0.0
                     val category = doc.getString("category") ?: "General"
                     val stockQty = (doc.getLong("stockQuantity") ?: 0L).toInt()
-                    val productId = doc.id   // 🔹 Firestore document id
+                    val productId = doc.id
+                    val imageUrl = doc.getString("imageUrl") ?: ""
+                    val description = doc.getString("description") ?: ""
 
-                    // Convert Double to "₹1000"
-                    val priceString = "₹${priceDouble.toInt()}"
-
-                    // Product list for grid
-                    val product = Product(
-                        name = name,
-                        image = R.drawable.ic_product,
-                        price = priceString,
-                        buttonText = "Add to Cart",
-                        productId = productId,       // 🔹 store id
-                        stockQuantity = stockQty,    // 🔹 store stock
-                        category = category          // 🔹 store category
+                    productList.add(
+                        Product(
+                            name = name,
+                            imageUrl = imageUrl,
+                            price = priceDouble,
+                            productId = productId,
+                            stockQuantity = stockQty,
+                            category = category,
+                            description = description
+                        )
                     )
-                    productList.add(product)
 
-                    // Accumulate stock per category
-                    val currentTotal = categoryStockMap[category] ?: 0
-                    categoryStockMap[category] = currentTotal + stockQty
+                    categoryStockMap[category] = (categoryStockMap[category] ?: 0) + stockQty
                 }
 
-                // Update products adapter
                 productsAdapter.notifyDataSetChanged()
 
-                // Build category list from map
                 categoryList.clear()
-                for ((catName, totalStock) in categoryStockMap) {
-                    val categoryItem = Category(
-                        title = catName,
-                        itemCount = totalStock,
-                        iconResId = R.drawable.ic_crop_tonics // placeholder icon
+                categoryStockMap.forEach { (catName, totalStock) ->
+                    categoryList.add(
+                        Category(
+                            title = catName,
+                            itemCount = totalStock,
+                            iconResId = R.drawable.ic_crop_tonics
+                        )
                     )
-                    categoryList.add(categoryItem)
                 }
-
-                // Update categories adapter
                 categoryAdapter.notifyDataSetChanged()
             }
             .addOnFailureListener { e ->
@@ -237,7 +240,6 @@ class HomeFragment : Fragment() {
             .get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
-                    // Try fullName first, fallback to name, then email
                     val fullName = snapshot.getString("fullName")
                         ?: snapshot.getString("name")
                         ?: snapshot.getString("email")
@@ -247,7 +249,7 @@ class HomeFragment : Fragment() {
                 }
             }
             .addOnFailureListener {
-                // optional: keep default text
+                // keep default if needed
             }
     }
 

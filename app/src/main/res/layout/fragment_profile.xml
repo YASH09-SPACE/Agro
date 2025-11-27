@@ -193,6 +193,16 @@
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnMyposts"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="32dp"
+                android:backgroundTint="#1B5E20"
+                android:text="My Posts"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnLogout"

@@ -1,107 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginBottom="16dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp">
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="12dp"
+    card_view:cardCornerRadius="12dp"
+    card_view:cardElevation="4dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="12dp">
+        android:orientation="vertical"
+        android:padding="12dp">
 
-        <!-- User Info Header -->
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/ivProfile"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/ic_user"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tvUserName"
-            android:layout_width="wrap_content"
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
-            app:layout_constraintStart_toEndOf="@+id/ivProfile"
-            app:layout_constraintTop_toTopOf="@+id/ivProfile"
-            tools:text="Vishwanath Mishra" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tvPostDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
-            app:layout_constraintStart_toStartOf="@+id/tvUserName"
-            app:layout_constraintTop_toBottomOf="@+id/tvUserName"
-            tools:text="25 sep 2020" />
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="User Name"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:textSize="14sp" />
 
-        <!-- Post Image -->
+            <TextView
+                android:id="@+id/tvPostDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="25 Sep 2020"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Image (optional) -->
         <ImageView
             android:id="@+id/ivPostImage"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop"
-            android:contentDescription="Post Image"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivProfile"
-            tools:src="@drawable/img_sample_disease" />
+            android:visibility="gone"
+            android:src="@drawable/img_sample_disease" />
 
         <!-- Description -->
         <TextView
             android:id="@+id/tvDescription"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginHorizontal="16dp"
-            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:text="Post description..."
             android:textColor="@android:color/black"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivPostImage"
-            tools:text="Diseased leaves of zucchini growing in the garden. High quality photo" />
+            android:textSize="14sp" />
 
-        <!-- Action Bar (Like, Comment, Save) -->
-        <ImageButton
-            android:id="@+id/btnLike"
-            android:layout_width="wrap_content"
+        <!-- Likes & comments -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginStart="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Like"
-            android:padding="8dp"
-            android:src="@drawable/ic_heart_outline"
-            app:tint="@android:color/darker_gray"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvDescription" />
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
 
-        <ImageButton
-            android:id="@+id/btnComment"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/tvLikes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 Likes"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvComments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="0 Comments"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Comment"
-            android:padding="8dp"
-            android:src="@drawable/ic_comment_outline"
-            app:tint="@android:color/darker_gray"
-            app:layout_constraintStart_toEndOf="@+id/btnLike"
-            app:layout_constraintTop_toTopOf="@+id/btnLike" />
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="end">
 
+            <ImageButton
+                android:id="@+id/btnLike"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Like"
+                android:padding="8dp"
+                android:src="@drawable/ic_heart_outline" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageButton
+                android:id="@+id/btnComment"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Comment"
+                android:padding="8dp"
+                android:src="@drawable/ic_comment_outline" />
+        </LinearLayout>
+
+    </LinearLayout>
+
 </androidx.cardview.widget.CardView>

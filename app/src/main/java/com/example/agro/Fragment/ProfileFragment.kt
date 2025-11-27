@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.agro.MyOrdersActivity
 import com.example.agro.databinding.FragmentProfileBinding
+import com.example.agro.my_posts
 import com.example.agro.sign_in
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -52,6 +53,11 @@ class ProfileFragment : Fragment() {
         // My Orders button → open MyOrdersActivity
         binding.btnMyorders.setOnClickListener {
             val intent = Intent(requireContext(), MyOrdersActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnMyposts.setOnClickListener {
+            val intent = Intent(requireContext(), my_posts::class.java)
             startActivity(intent)
         }
 
